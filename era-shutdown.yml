@@ -1,0 +1,11 @@
+#
+# © JSC NICEVT
+#
+---
+- hosts: virt-nodes
+  user: root
+
+  tasks:
+   - name: выключение узлов
+     shell: shutdown -h now 
+

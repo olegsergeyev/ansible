@@ -1,0 +1,78 @@
+#
+# © JSC NICEVT
+#
+---
+- hosts: virt-nodes
+  user: root
+
+  tasks:
+   - name: test
+     shell: hostname && host -t A {{ ansible_fqdn }} 
+
+   - name: проверяем DNS и определяем текущий IP адрес
+     shell: host -t A {{ ansible_fqdn }} | awk '{print $NF}' ; test ${PIPESTATUS[0]} -eq 0 
+     register: host_sh
+
+   - name: удаляем файл 'Проводное\ соединение\ 1' соединения NetworkManager
+     file: path='/etc/NetworkManager/system-connections/Проводное соединение 1' state=absent
+
+   - name: удаляем файл 'Wired\ connection\ 1' соединения NetworkManager
+     file: path='/etc/NetworkManager/system-connections/Wired connetion 1' state=absent
+
+   - name: Проверяем, какие установлены соединения в NetworkManager
+     shell: nmcli con show
+     register: output
+
+   - name: Если нужно, добавляем соеденинение admin-net
+     shell: nmcli con add type ethernet con-name admin-net ifname eth0 \
+        ip4 {{ host_sh.stdout }}/24 \
+        ip4 {{ host_sh.stdout | replace('10.0.0','10.20.1') }}/24 \
+        ip4 {{ host_sh.stdout | replace('10.0.0','10.21.1') }}/24 \
+        ipv4.dns {{ default_dns }}
+     when: output.stdout.find('admin-net') == -1
+
+   - name: Если нужно, добавляем соеденинение admin-net
+     shell: nmcli con add type ethernet con-name admin-net-server ifname enp1s0f0 \
+        ip4 {{ host_sh.stdout }}/24 \
+        ip4 {{ host_sh.stdout | replace('10.0.0','10.20.1') }}/24 \
+        ip4 {{ host_sh.stdout | replace('10.0.0','10.21.1') }}/24 \
+        ipv4.dns {{ default_dns }}
+     when: output.stdout.find('admin-net-server') == -1
+
+   - name: Если нужно, удаляем соеденинение 'Проводное\ соединение 1'
+     shell: nmcli con delete 'Проводное\ соединение 1'
+     when: output.stdout.find('Проводное соединение 1') != -1
+
+   - name: Если нужно, удаляем соеденинение 'Wired\ connection 1'
+     shell: nmcli con delete 'Wired connection 1'
+     when: output.stdout.find('Wired connection 1') != -1
+
+#   - name: создание файла /etc/NetworkManager/system-connections/admin-net
+#     template: owner=root group=root mode=644
+#        src=admin-net.j2 dest=/etc/NetworkManager/system-connections/admin-net.1
+
+#   - name: создание файла /etc/network/interfaces
+#     template: owner=root group=root mode=644
+#        src=interfaces.j2 dest=/etc/network/interfaces
+
+#   - name: изменение файла /etc/NetworkManager/NetworkManager.conf
+#     lineinfile: dest=/etc/NetworkManager/NetworkManager.conf regexp='.*managed=' line='managed=true' state=present
+#
+#
+   - name: перезапуск NetworkManager
+     service: name=NetworkManager state=restarted
+
+        #   - name: создание файла /etc/resolv.conf
+        #template: owner=root group=root mode=644
+        #src=resolv.conf.j2 dest=/etc/resolv.conf
+
+#   - name: перезапуск службы networking
+#     service: name=networking state=restarted
+
+#   - name: создание файла /etc/apt/sources.list
+#     template: owner=root group=root mode=644
+#        src=sources.list.j2 dest=/etc/apt/sources.list.1
+
+#   - name: перезагрузка узлов
+#     shell: reboot 
+

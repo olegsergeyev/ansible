@@ -1,0 +1,35 @@
+#
+# © JSC NICEVT
+#
+---
+- hosts: virt-nodes
+  user: root
+
+  tasks:
+   - name: обновление списка пакетов
+     apt: update_cache=yes
+
+   - name: устанавливаем пакет open-iscsi
+     apt: pkg=open-iscsi state=present 
+
+   - name: настраиваем файл /etc/iscsi/iscsid.conf
+     lineinfile: dest=/etc/iscsi/iscsid.conf regexp='node.startup = manual' line='node.startup = automatic' state=present
+
+   - name: выполняем поиск iscsi таргетов 
+     shell: iscsiadm -m discovery -t st -p {{ item }}
+     with_items:
+       - 10.20.1.1
+       - 10.21.1.1
+
+   - name: редактируем st_config 
+     lineinfile: dest=/etc/iscsi/send_targets/{{ item }},3260/st_config regexp='discovery.sendtargets.use_discoveryd = No' \ 
+        line='discovery.sendtargets.use_discoveryd = Yes' state=present
+     with_items:
+       - 10.20.1.1
+       - 10.21.1.1
+
+#   - name: активируем службу iscsi
+#     shell: systemctl enable iscsi
+
+   - name: запускаем службу iscsi
+     shell: systemctl start iscsi

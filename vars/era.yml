@@ -1,0 +1,111 @@
+# переменные для настройки сервера автоматической инсталляции ОС
+
+# Необходимость UEFI. В любом случае допускается одновременное наличие 
+# обычных и UEFI целевых машин.
+uefi: False
+
+# Указываем имя необходимого шаблона (preseed file) для автоматической установки linux,
+# если нужен другой шаблон, то его можно
+# создать по аналогии c шаблонами расположенными в roles/common/templates
+default_preseed: 'standard'
+
+# Имя домена
+default_domain: sandbox.era.ru
+
+# Адрес шлюза
+default_gateway: 10.0.0.1
+
+# Адрес dns (нужен только в процессе деплоя)
+default_dns: 10.0.0.1
+
+# Параметры создаваемого пользователя
+user:
+   login: user
+   name: Administrator
+   password: password
+
+# Пароль для пользователя root. Удалите, если нет
+# надобности в создании root.
+root:
+   password: password
+
+# Пароль для GRUB 2
+grub:
+   password: password
+
+# Сетевой интерфейс на котором будет работать DHCP-сервер.
+net_iface: eth1
+
+# Параметры сети. Стандартные настройки позволяют
+# автоматически подхватывать данные с интерфейса.
+network:
+   # IP-адрес сервера
+   addr: '{{ hostvars[inventory_hostname]["ansible_" + net_iface].ipv4.address }}'
+   # Сетевая маска
+   mask: '{{ hostvars[inventory_hostname]["ansible_" + net_iface].ipv4.netmask }}'
+   # IP-адрес сети
+   network: '{{ hostvars[inventory_hostname]["ansible_" + net_iface].ipv4.network }}'
+
+# Каталог с файлами TFTP
+tftp:
+        #path: /srv/tftp
+   path: /srv/tftp.1
+
+# Каталог с файлами сервера HTTP или FTP
+repos:
+   # Адрес сервера с репозиторим Astra Linux Special Edition
+   host: "{{ network.addr }}"
+   # Абсолютный путь к начальному каталогу сервера
+   path: /srv/repos
+   #path: /srv/ftp/astra/current
+   # Относительный путь к репозиторию операционной системы
+   #os: /se16/os
+   os: /astra/current/smolensk/mounted-iso-main
+
+# Настройки сервера DHCP (Dnsmasq)
+dhcp:
+    # Включение/выключение статического режима dhcp сервера: false или true,
+    # если установлено в true, то адреса выдаются только по тем mac-адресам, которык указаны в machines_by_mac
+    static_mode: true
+    #static_mode: false
+    # Диапазон адресов, используется когда static_mode равен false
+    subset: [10.0.0.100, 10.0.0.125, 255.255.255.0]
+
+# Список для автоназначения hostname, для добавления новой машины, через запятую
+# пишем { hostname: 'Имя машины(доступны след. символы 'a-zA-Z0-9' и знак '-')', 
+#         ip: 'ip адрес из диапазона указанного в dhcp_subset' }
+
+target_machines: 
+   [{ hostname: 'admin-node-1.sandbox.era.mil.ru', ip: '10.0.0.11' },
+    { hostname: 'admin-node-2.sandbox.era.mil.ru', ip: '10.0.0.12' },
+    { hostname: 'virt-node-1.sandbox.era.mil.ru', ip: '10.0.0.101' },
+    { hostname: 'virt-node-2.sandbox.era.mil.ru', ip: '10.0.0.102' },
+    { hostname: 'virt-node-3.sandbox.era.mil.ru', ip: '10.0.0.103' },
+    { hostname: 'virt-node-4.sandbox.era.mil.ru', ip: '10.0.0.104' },
+    { hostname: 'virt-node-11.sandbox.era.mil.ru', ip: '10.0.0.111' },
+    { hostname: 'virt-node-12.sandbox.era.mil.ru', ip: '10.0.0.112' }
+    ]  
+
+# В случае если Вам необходимо назначить определенный hostname на определенную машину, 
+# НЕ используйте вариант задания через переменную target_machines, 
+# вместо этого заполняйте переменную machines_by_mac. В ней обязательно определяйте mac и
+# желаемый для данного mac'а hostname, можно еще также указывать специальный preseed 
+# (если не указать будет использован preseed файл по-умолчанию из переменной default_preseed). 
+# Все preseed складываем в roles/common/templates.
+# По-умолчанию сеть настраивается c dhcp, если Вам необходим статический IP
+# добавьте опцию ip в следующем формате - ip: XXX.XXX.XXX.XXX,
+# также можно, если понимаете зачем Вам это, указать mask (по-умолчанию берется netmask host-машины)
+# Пример настройки для статического ip:
+# { mac: '00-1c-c0-f8-ff-6a', hostname: 'example', preseed: 'preseed.cfg.j2', ip: 10.10.10.50 }
+# Пример настройки для статического ip с netmask:
+# { mac: '00-1c-c0-f8-ff-6a', hostname: 'example', preseed: 'preseed.cfg.j2', ip: 10.10.10.50, mask: 255.255.255.0 }
+
+machines_by_mac:
+     - { mac: ['00:25:90:cb:03:04'], hostname: admin-node-1, ip: 10.0.0.11, mask: 255.255.255.0 }
+     - { mac: ['00:25:90:cb:03:05'], hostname: admin-node-2, ip: 10.0.0.12, mask: 255.255.255.0 }
+     - { mac: ['00:25:90:cb:03:00'], hostname: virt-node-1, ip: 10.0.0.101, mask: 255.255.255.0 }
+     - { mac: ['00:25:90:cb:03:01'], hostname: virt-node-2, ip: 10.0.0.102, mask: 255.255.255.0 }
+     - { mac: ['00:25:90:cb:03:02'], hostname: virt-node-3, ip: 10.0.0.103, mask: 255.255.255.0 }
+     - { mac: ['00:25:90:cb:03:03'], hostname: virt-node-4, ip: 10.0.0.104, mask: 255.255.255.0 }
+     - { mac: ['ac:1f:6b:40:4b:bc'], hostname: virt-node-11, ip: 10.0.0.111, mask: 255.255.255.0 }
+     - { mac: ['ac:1f:6b:40:8e:ee'], hostname: virt-node-12, ip: 10.0.0.112, mask: 255.255.255.0 }

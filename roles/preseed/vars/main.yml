@@ -1,0 +1,128 @@
+standard:
+  name: "{{ default_preseed }}"
+
+  # partman-auto/method (raid, lvm, regular)
+  partman: regular
+
+  # partman-auto/disk (/dev/sdX, /dev/vdX или пустое значение)
+  disk:
+
+  # настройки LVM, если нет, то не будет использоваться
+  lvm:
+    name: system
+
+  # настройки программного RAID (если нужен)
+  softraid:
+
+  partitions:
+    - name: root
+      mount: /
+      size: 30/80
+      fs: ext4
+#    - name: var
+#      mount: /var
+#      size: 100/200
+#      fs: ext4
+    - name: swap
+      size: 200%
+      fs: swap
+  #  - name: storage
+  #    size: 100/200
+  #    device: /dev/sdb
+  #    fs: lvm
+  #  - name: home
+  #    size: 50/100
+  #    fs: ext4
+  #    mount: /home
+  #    in_vg: storage
+
+  # Локаль в формате aa_BB (ru_RU)
+  locale: ru_RU
+
+  # Комбинация переключения раскладки (Ctrl+Shift)
+  keyboard_toggle: Ctrl+Shift
+
+  # Часовой пояс (Europe/Moscow)
+  timezone: Europe/Moscow
+
+  # Выбор макропакетов инсталляции. Список можно узнать с помощью
+  # команды «tasksel --list-tasks».
+  # Astra Linux Special Edition: Base, Fly, Internet, Office,
+  #  Features, Network, Database, Multimedia
+  # Стандартное значение: Base, Fly
+  tasksel: [Base, Fly]
+  #tasksel: [Base, Network]
+
+  # Дополнительные пакеты для установки (openssh-server ethtool)
+  extra_pkgs: [openssh-server, ethtool, open-iscsi, lvm2]
+  #extra_pkgs: [openssh-server, ethtool, network-manager, python, dnsutils]
+
+  # Спец. возможности Астры: kiosk, ald-server, ald-client ([])
+  astra: []
+
+  # Спец. настройки Астры. При необходимости раскоментируйте пункты
+  # и удалите «[]»
+  astra_setup: []
+#   - 'Disable automatic network configuration'  # Отключить автоматическую настройку сети
+#   - 'Enable ELF signature check'           # Включить режим замкнутой программной среды
+#   - 'Disable non-execution bit setup'      # Запретить установку исполняемого бита
+#   - 'Use kernel with PaX'                  # Использовать по-умолчанию ядро PaX
+#   - 'Disable bootloader menu show up'      # Запретить вывод меню загрузчика
+#   - 'Enable swap cleanup'                  # Включить очистку разделов страничного обмена
+#   - 'Enable freeing regions cleanup on EXT-partitions'   # Включить очистку освобождаемых областей для EXT-разделов
+#   - 'Install 32-bit bootloader'            # Установить 32-х битный загрузчик
+
+  # Что делать после уставновки: reboot, poweroff, halt (reboot)
+  finish: reboot
+
+mdraid:
+  name: mdraid
+
+  partman: raid
+
+  disk:
+
+  lvm:
+    name: system
+
+  # настройки программного RAID (если нужен)
+  softraid:
+    # Устройства в RAID
+    devices: [ /dev/sda, /dev/sdb ]
+    # Тип RAID: 0 - stripe, 1 - mirror, …
+    level: 1
+    # Разделы аналогично partitions
+    partitions:
+      - name: boot
+        mount: /boot
+        size: 1/1
+        fs: ext4
+
+  partitions:
+    - name: root
+      mount: /
+      size: 30/50
+      fs: ext4
+    - name: swap
+      size: 200%
+      fs: swap
+    - name: var
+      mount: /var
+      size: 100/200
+      fs: ext4
+
+  locale: ru_RU
+
+  keyboard_toggle: Ctrl+Shift
+
+  timezone: Europe/Moscow
+
+  tasksel: [Base]
+
+  extra_pkgs: [openssh-server, ethtool]
+
+  astra: []
+
+  astra_setup: []
+
+  finish: reboot

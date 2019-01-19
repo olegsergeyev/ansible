@@ -1,0 +1,30 @@
+#
+# © ООО «Лаборатория 50», 2015, 16
+#
+---
+  - name: установка rsync
+    apt: pkg=rsync state=latest
+
+  - name: создание целевого каталога
+    file: path={{ dst }} state=directory
+          owner=www-data group=www-data
+
+  - name: заливка репозитория (dists)
+    synchronize: src={{ src }}/dists dest={{ dst }}
+                 links=yes mode=pull recursive=yes
+
+  - name: заливка репозитория (pool)
+    synchronize: src={{ src }}/pool dest={{ dst }}
+                 links=yes mode=pull recursive=yes
+
+  - name: копирование ядра и начального образа
+    synchronize: src={{ src }}/netinst dest={{ tftp.path }}
+                 mode=pull
+
+  - name: копирование ядра и начального образа
+    synchronize: src={{ src }}/isolinux/ldlinux.c32 dest={{ tftp.path }}
+                 mode=pull
+#    with_items:
+#      - linux
+#      - initrd.gz
+#      - pxelinux.0

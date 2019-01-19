@@ -1,0 +1,22 @@
+[connection]
+id=admin-net
+uuid=5bec4518-2383-4bee-a5d0-db0417b0f58c
+type=ethernet
+interface-name=eth0
+permissions=
+
+[ethernet]
+mac-address-blacklist=
+
+[ipv4]
+address1={{ host_sh.stdout }}/24
+address2={{ host_sh.stdout|replace('10.0.0','10.20.1') }}/24
+address3={{ host_sh.stdout|replace('10.0.0','10.21.1') }}/24
+dns={{ default_dns }};
+dns-search=
+method=manual
+
+[ipv6]
+addr-gen-mode=stable-privacy
+dns-search=
+method=auto

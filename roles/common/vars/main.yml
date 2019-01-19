@@ -1,0 +1,5 @@
+# variable for using into tft.conf.j2
+# available values: ethX or auto
+#eth_interface: 'eth0'
+eth_interface: 'auto'
+

@@ -1,0 +1,11 @@
+#
+# © JSC NICEVT
+#
+---
+- hosts: virt-nodes
+  user: root
+
+  tasks:
+   - name: перезагрузка узлов
+     shell: reboot 
+

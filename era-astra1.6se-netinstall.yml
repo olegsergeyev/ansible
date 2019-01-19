@@ -1,0 +1,18 @@
+- hosts: boot-server
+  user: root
+  connection: local
+  sudo: true
+
+  pre_tasks:
+   - name: обновление списка пакетов
+     apt: update_cache=yes
+
+  roles:
+    # Используемый демон для раздачи репозитория и preseed-файлов
+    - vsftpd
+    # Список подготавливаемых шаблонов, как минимум нужен standard
+    - { role: preseed, preseed: "{{ standard }}" }
+    - common
+    # Копирование репозитория операционной системы
+    - { role: copy, src: /media/cdrom, dst: "{{ repos.path }}/{{ repos.os }}" }
+

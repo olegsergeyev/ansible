@@ -1,0 +1,13 @@
+#
+# © JSC NICEVT
+#
+---
+- hosts: virt-nodes
+  user: root
+
+  tasks:
+   - name: обновление списка пакетов
+     apt: update_cache=yes
+
+   - name: установка ald-client
+     apt: pkg=ald-client state=latest

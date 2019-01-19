@@ -1,0 +1,17 @@
+boot-server
+
+[head]
+virt-node-1.sandbox.era.mil.ru
+
+[admin-nodes]
+admin-node-1.sandbox.era.mil.ru
+admin-node-2.sandbox.era.mil.ru
+
+[virt-nodes]
+virt-node-1.sandbox.era.mil.ru
+virt-node-2.sandbox.era.mil.ru
+#virt-node-3.sandbox.era.mil.ru
+#virt-node-4.sandbox.era.mil.ru
+virt-node-11.sandbox.era.mil.ru
+virt-node-12.sandbox.era.mil.ru
+

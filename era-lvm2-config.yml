@@ -1,0 +1,54 @@
+#
+# © JSC NICEVT
+#
+---
+- hosts: virt-nodes
+  user: root
+
+  tasks:
+   - name: обновление списка пакетов
+     apt: update_cache=yes
+
+   - name: устанавливаем пакет lvm2
+     apt: pkg=lvm2 state=present 
+
+#   - name: настраиваем файл /etc/lvm/lvm.conf -- отключаем lvmetad
+#     lineinfile: dest=/etc/lvm/lvm.conf regexp='use_lvmetad =' line='use_lvmetad = 0' state=present
+#
+#   - name: настраиваем файл /etc/lvm/lvm.conf -- настраиваем параметр filter
+#     lineinfile: dest=/etc/lvm/lvm.conf regexp='^filter = \["a\|/dev/dm-\*\|", "r\|\.\*\|"\]' line='filter = ["a|/dev/dm-*|", "r|.*|"]' state=present
+#
+#   - name: настраиваем файл /etc/lvm/lvm.conf -- настраиваем параметр global_filter
+#     lineinfile: dest=/etc/lvm/lvm.conf regexp='^global_filter = \["a\|/dev/dm-\*\|", "r\|\.\*\|"\]' line='global_filter = ["a|/dev/dm-*|", "r|.*|"]' state=present
+
+   - name: создание файла /etc/lvm/lvm.conf
+     template: owner=root group=root mode=644
+        src=lvm.conf.j2 dest=/etc/lvm/lvm.conf
+
+   - name: останавливаем службу lvm2-lvmetad
+     shell: systemctl stop lvm2-lvmetad
+
+   - name: деактивируем службу lvm2-lvmetad
+     shell: systemctl disable lvm2-lvmetad
+
+   - name: активируем службу lvm2-monitor
+     shell: systemctl enable lvm2-monitor
+
+   - name: запускаем службу lvm2-monitor
+     shell: systemctl start lvm2-monitor
+
+- hosts: virt-node-1.sandbox.era.mil.ru
+  user: root
+
+  tasks:
+   - name: создаем группу томов (vg-one-test) 
+     lvg:
+       vg: vg-one-test
+       pvs: /dev/dm-0
+       pesize: 1024
+
+   - name: создаем логический том (lvm_images) 
+     lvol:
+       vg: vg-one-test
+       lv: lvm_images
+       size: 100g

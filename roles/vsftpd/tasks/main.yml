@@ -1,0 +1,24 @@
+#
+# © ООО «Лаборатория 50», 2014
+#
+---
+    - name: установка пакета vsftpd
+      apt: pkg=vsftpd state=latest force=yes
+
+    - name: создание корневой папки для vsftpd
+      file: path={{ repos.path }} mode=775 state=directory
+
+    - name: изменение домашнего директория системного пользователя ftp
+      command: usermod -d {{ repos.path }} ftp
+
+    - name: создание каталогов для astra 1.6se (choose-mirror bug)
+      file: path={{ repos.path }}/astra/current/smolensk/mounted-iso-main state=directory owner=ftp mode=0755
+
+      #- name: создание символьной ссылки
+      #shell: ln -sf {{ repos.path }}/astra/current/smolensk/mounted-iso-main {{ repos.path }}/{{ repos.os }}
+
+    - name: создание файла конфигурации для vsftpd
+      template: src=vsftpd.conf.j2 dest=/etc/vsftpd.conf
+
+    - name: перезапуск vsftpd
+      service: name=vsftpd state=restarted enabled=yes
